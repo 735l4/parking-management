@@ -15,11 +15,39 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Seed roles and permissions first
+        $this->call(RoleAndPermissionSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Create admin user (or find existing)
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@parking.local'],
+            [
+                'name' => 'Admin User',
+                'phone' => '9841000000',
+                'password' => bcrypt('password'),
+            ]
+        );
+        if (! $admin->hasRole('super_admin')) {
+            $admin->assignRole('super_admin');
+        }
+
+        // Create staff user (or find existing)
+        $staff = User::firstOrCreate(
+            ['email' => 'staff@parking.local'],
+            [
+                'name' => 'Staff User',
+                'phone' => '9841000001',
+                'password' => bcrypt('password'),
+            ]
+        );
+        if (! $staff->hasRole('staff')) {
+            $staff->assignRole('staff');
+        }
+
+        // Seed vehicle types
+        $this->call(VehicleTypeSeeder::class);
+
+        // Seed sample parking tickets
+        $this->call(ParkingTicketSeeder::class);
     }
 }
